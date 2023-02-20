@@ -9,14 +9,22 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    datadelegate.cpp \
+    dataview.cpp \
     main.cpp \
     widget.cpp
 
 HEADERS += \
+    dataDef.h \
+    datadelegate.h \
+    dataview.h \
     widget.h
 
 FORMS += \
+    dataview.ui \
     widget.ui
+
+UI_DIR = ../build-memo-Desktop_Qt_5_12_10_MinGW_64_bit-Debug
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
