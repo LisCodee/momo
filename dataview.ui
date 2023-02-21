@@ -54,6 +54,31 @@
     <string>＋</string>
    </property>
   </widget>
+  <widget class="QLabel" name="lbTopic">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>30</width>
+     <height>90</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>30</width>
+     <height>90</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>30</width>
+     <height>90</height>
+    </size>
+   </property>
+   <property name="text">
+    <string>主题名称</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections/>

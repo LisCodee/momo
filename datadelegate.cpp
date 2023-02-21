@@ -1,7 +1,11 @@
 #include <QPainter>
-
+#include <QDebug>
+#include <QEvent>
+#include <QMouseEvent>
+#include <QObject>
+#include <QString>
 #include "datadelegate.h"
-#include "dataDef.h"
+#include "dataview.h"
 
 
 DataDelegate::DataDelegate(QObject *parent):
@@ -20,15 +24,13 @@ void DataDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     if(index.isValid())
     {
         painter->save();
-
-        DataStatus status = (DataStatus)(index.data(Qt::UserRole).toInt());
-
-        QVariant variant = index.data(Qt::UserRole+1);
-        Data data = variant.value<Data>();
+        QVariant variant = index.data(Qt::UserRole);
+        DataDetail dataDetail = variant.value<DataDetail>();
 
         QStyleOptionViewItem viewOption(option);//用来在视图中画一个item
 
         QRectF rect;
+        //        qDebug() << option.rect;
         rect.setX(option.rect.x());
         rect.setY(option.rect.y());
         rect.setWidth( option.rect.width()-1);
@@ -47,17 +49,18 @@ void DataDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
         path.lineTo(rect.topRight() + QPointF(0, radius));
         path.quadTo(rect.topRight(), rect.topRight() + QPointF(-radius, -0));
 
-        if(option.state.testFlag(QStyle::State_Selected))
-        {
-            painter->setPen(QPen(Qt::blue));
-            painter->setBrush(QColor(229, 241, 255));
-            painter->drawPath(path);
-        }
-        else if(option.state.testFlag(QStyle::State_MouseOver))
+        //        if(option.state.testFlag(QStyle::State_Selected))
+        //        {
+        //            painter->setPen(QPen(Qt::blue));
+        //            painter->setBrush(QColor(229, 241, 255));
+        //            painter->drawPath(path);
+        //        }
+        if(option.state.testFlag(QStyle::State_MouseOver))
         {
             painter->setPen(QPen(Qt::green));
             painter->setBrush(Qt::NoBrush);
             painter->drawPath(path);
+            painter->fillRect(option.rect, option.palette.highlight());
         }
         else{
             painter->setPen(QPen(Qt::gray));
@@ -68,17 +71,17 @@ void DataDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
         //绘制数据位置
         QRect contentRect = QRect(rect.left() +10, rect.top()+10, rect.width()-30, rect.height()-20);
         QRect circle = QRect(contentRect.right(), rect.top()+10, 10, 10);
-//        QRect telRect = QRect(rect.left() +10, rect.bottom()-25, rect.width()-10, 20);
+        //        QRect telRect = QRect(rect.left() +10, rect.bottom()-25, rect.width()-10, 20);
 
 
-        switch (status) {
+        switch (dataDetail.status) {
         case PROCESSING:
             painter->setBrush(Qt::red);
             painter->setPen(QPen(Qt::red));
             break;
         case FINISH:
-            painter->setBrush(Qt::blue);
-            painter->setPen(QPen(Qt::blue));
+            painter->setBrush(Qt::green);
+            painter->setPen(QPen(Qt::green));
             break;
         }
 
@@ -86,7 +89,7 @@ void DataDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
         painter->setPen(QPen(Qt::black));
         painter->setFont(QFont("Times", 10));
-        painter->drawText(contentRect,Qt::AlignLeft,data.content); //绘制内容
+        painter->drawText(contentRect,Qt::AlignLeft,dataDetail.itemName); //绘制内容
 
 
         painter->restore();
@@ -97,5 +100,22 @@ void DataDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 QSize DataDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     return QSize(160, 60);
+}
+
+bool DataDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
+{
+    if (event->type() == QEvent::MouseButtonRelease) {
+        QMouseEvent *mouseEvent = dynamic_cast<QMouseEvent *>(event);
+        if (mouseEvent->button() == Qt::LeftButton) {
+            // 执行自定义操作
+            QVariant variant = index.data(Qt::UserRole);
+            DataDetail dataDetail = variant.value<DataDetail>();
+
+            emit itemClicked(dataDetail);                       //触发点击事件信号，改变事件状态
+            qDebug() << "Item clicked:" << dataDetail.itemName;
+        }
+    }
+
+    return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
